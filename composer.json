@@ -1,0 +1,10 @@
+{
+  "name": "blockbite/next",
+  "description": "A custom WordPress plugin.",
+  "type": "wordpress-plugin",
+  "autoload": {
+    "psr-4": {
+      "Blockbite\\Next\\": "classes/"
+    }
+  }
+}

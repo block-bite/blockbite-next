@@ -2,6 +2,8 @@
 
 namespace Blockbite\Next;
 
+use Blockbite\Next\NextAcf;
+
 class NextArchive
 {
 
@@ -15,10 +17,10 @@ class NextArchive
 
         $formatted = array_map(function($post) use ($acfProcessor) {
             // Get thumbnail as image array (not ID)
-            $thumbnail = null;
+            $image = null;
             if (function_exists('get_post_thumbnail_id')) {
                $thumbnail_id = get_post_thumbnail_id($post->ID);
-               $thumbnail = wp_get_attachment_image_url($thumbnail_id, 'full');
+               $image = NextAcf::processImageField($thumbnail_id);
  
             }
 
@@ -87,7 +89,7 @@ class NextArchive
                 'slug'  => $post->post_name,
                 'title' => get_the_title($post),
                 'excerpt' => get_the_excerpt($post),
-                'thumbnail' => $thumbnail,
+                'image' => $image,
                 'tags' => $tagsArr,
                 'categories' => $catsArr,
                 'date' => $post->post_date,

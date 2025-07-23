@@ -2,7 +2,7 @@
 /*
 Plugin Name: Blockbite Next Plugin
 Description: A custom WordPress plugin with Composer autoloading.
-Version: 1.0
+Version: 1.0.1
 Author: Your Name
 */
 

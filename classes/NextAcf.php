@@ -140,7 +140,7 @@ class NextAcf
         * @param int|string $imageId
         * @return array|string
         */
-    private function processImageField($imageId)
+    public static function processImageField($imageId)
     {
         if (is_numeric($imageId)) {
             $imageUrl = wp_get_attachment_image_url($imageId, 'full');

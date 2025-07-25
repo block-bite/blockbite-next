@@ -70,19 +70,8 @@ class NextArchive
             }
 
             // Get ACF fields if available
-            $acf = null;
-            if ($acfProcessor && function_exists('get_fields')) {
-                $acfFields = get_fields($post->ID);
-                if ($acfFields && is_array($acfFields)) {
-                    $acf = [];
-                    foreach ($acfFields as $key => $value) {
-                        // Try to get field type
-                        $fieldObj = function_exists('get_field_object') ? get_field_object($key, $post->ID) : null;
-                        $type = $fieldObj['type'] ?? null;
-                        $acf[$key] = $acfProcessor->processField($type, $value);
-                    }
-                }
-            }
+           $acf = (new NextAcf())->getAcfPageFields($post->ID);
+           
 
             return [
                 'id'    => $post->ID,

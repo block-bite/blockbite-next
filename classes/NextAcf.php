@@ -8,7 +8,7 @@ class NextAcf
 
     public function __construct() {}
 
-    public function getAcfFields($block)
+    public function getAcfBlockFields($block)
     {
         if (!function_exists('get_fields')) {
             return [];
@@ -24,16 +24,71 @@ class NextAcf
             return [];
         }
 
-        return $this->processAcfFields($acfFields);
+        return $this->processAcfBlockFields($acfFields);
     }
 
-    private function processAcfFields($acfFields)
+
+
+    public function getAcfPageFields($pageId)
+    {
+        if (!function_exists('get_fields')) {
+            return [];
+        }
+
+        $this->postId = $pageId;
+
+        $acfFields = get_fields($this->postId);
+
+        if (empty($acfFields)) {
+            return [];
+        }
+
+        return $this->processAcfPageFields($acfFields);
+    }
+
+
+    private function processAcfBlockFields($acfFields)
     {
         $fields = $this->getBlockFields($acfFields);
         $fields = $this->cleanUpSubFields($fields);
 
         return $fields;
     }
+
+
+    public function processAcfPageFields(array $acfFields)
+    {
+        $processedFields = [];
+
+        foreach ($acfFields as $key => $value) {
+            $field = get_field_object($key, $this->postId);
+
+            if (!$field || !isset($field['type'])) {
+                continue;
+            }
+
+            $type = $field['type'];
+            $subfields = $field['sub_fields'] ?? [];
+
+            if ($type === 'repeater') {
+                $processedFields[$key] = [
+                    'name' => $key,
+                    'type' => $type,
+                    'data' => $this->processRepeaterPageField($value, $subfields),
+                ];
+            } else {
+                $processedFields[$key] = [
+                    'name' => $key,
+                    'type' => $type,
+                    'data' => $this->processField($type, $value),
+                ];
+            }
+        }
+
+        return $processedFields;
+    }
+
+
 
     private function getBlockFields($acfFields)
     {
@@ -55,7 +110,7 @@ class NextAcf
 
                 $subFieldData = [];
                 if ($type === 'repeater') {
-                    $subFieldData = $this->processRepeaterField($acfFields, $name, $subfields, $data);
+                    $subFieldData = $this->processRepeaterBlockField($acfFields, $name, $subfields, $data);
                 }
 
                 $fields[$name] = [
@@ -72,6 +127,33 @@ class NextAcf
     }
 
 
+    private function processRepeaterPageField(array $rows, array $subfields)
+    {
+        $processed = [];
+
+        foreach ($rows as $row) {
+            $processedRow = [];
+
+            foreach ($subfields as $subField) {
+                $name = $subField['name'];
+                $type = $subField['type'];
+                $value = $row[$name] ?? null;
+
+                if ($type === 'repeater' && is_array($value)) {
+                    $processedRow[$name] = $this->processRepeaterPageField($value, $subField['sub_fields'] ?? []);
+                } else {
+                    $processedRow[$name] = $this->processField($type, $value);
+                }
+            }
+
+            $processed[] = $processedRow;
+        }
+
+        return $processed;
+    }
+
+
+
 
     /*
         * Process repeater fields recursively
@@ -84,7 +166,7 @@ class NextAcf
         */
 
 
-    private function processRepeaterField($acfFields, $fieldName, $subfields, $rowCount)
+    private function processRepeaterBlockField($acfFields, $fieldName, $subfields, $rowCount)
     {
         $repeaterData = [];
 
@@ -97,7 +179,7 @@ class NextAcf
                 $subFieldData = $acfFields[$subFieldDataKey] ?? null;
 
                 if ($subField['type'] === 'repeater') {
-                    $subFieldData = $this->processRepeaterField(
+                    $subFieldData = $this->processRepeaterBlockField(
                         $acfFields,
                         $subFieldDataKey,
                         $subField['sub_fields'],

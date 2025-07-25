@@ -12,6 +12,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Blockbite\Next\NextGutenberg;
 use Blockbite\Next\NextArchive;
 use Blockbite\Next\NextSearch;
+use Blockbite\Next\NextAcf;
 use Blockbite\Blockbite\Frontend as BlockbiteFrontend;
 
 // Register single endpoint for any CPT and slug
@@ -41,6 +42,8 @@ add_action('rest_api_init', function () {
             }
 
             $gutenberg = new NextGutenberg();
+            $acf = new NextAcf();
+
             return [
                 'id' => $post->ID,
                 'slug' => $slug,
@@ -48,6 +51,7 @@ add_action('rest_api_init', function () {
                 'post_status'    => $is_preview ? ['publish', 'draft', 'private', 'future'] : 'publish',
                 'title' => get_the_title($post),
                 'blocks' => $gutenberg->getBlocks($post->post_content),
+                'acf' => $acf->getAcfPageFields($post->ID),
             ];
         },
         'permission_callback' => '__return_true',

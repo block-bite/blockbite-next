@@ -36,7 +36,7 @@ class NextGutenberg{
                 'blockName'     => $block_name,
                 'innerHTML'     => $block['innerHTML'],
                 'attrs'         => $block['attrs'] ?? [],
-                'acf' =>        $this->acf->getAcfPageFields($block),
+                'acf' =>        $this->acf->getAcfBlockFields($block),
             ];
 
             if (!empty($block['innerBlocks'])) {

@@ -13,7 +13,10 @@ use Blockbite\Next\NextGutenberg;
 use Blockbite\Next\NextArchive;
 use Blockbite\Next\NextSearch;
 use Blockbite\Next\NextAcf;
+use Blockbite\Next\NextPreview;
 use Blockbite\Blockbite\Frontend as BlockbiteFrontend;
+
+new NextPreview();
 
 // Register single endpoint for any CPT and slug
 add_action('rest_api_init', function () {

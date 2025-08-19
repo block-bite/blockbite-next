@@ -1,13 +1,18 @@
 <?php
 /*
 Plugin Name: Blockbite Next Plugin
-Description: A custom WordPress plugin with Composer autoloading.
+Description: Next.js integration for Blockbite.
 Version: 1.0.1
-Author: Your Name
+Author: Merijnvanessen
+Author URI: https://www.block-bite.com
 */
 
-// Require Composer autoload file
-require_once __DIR__ . '/vendor/autoload.php';
+// Ensure Composer autoloader is included only once
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+} else {
+    return;
+}
 
 use Blockbite\Next\NextGutenberg;
 use Blockbite\Next\NextArchive;
@@ -23,9 +28,8 @@ add_action('rest_api_init', function () {
     register_rest_route('blockbite/v1/next', '/item(?:/(?P<slug>[a-zA-Z0-9-_\/]+))?', [
         'methods' => 'GET',
         'callback' => function ($data) {
-
             $is_preview = isset($_GET['preview']) && $_GET['preview'] === 'true';
-            $type = $_GET['type'] ?? 'page'; 
+            $type = $_GET['type'] ?? 'page';
             $slug = $data['slug'] ?? null;
 
             if ($slug === null) {
@@ -46,12 +50,11 @@ add_action('rest_api_init', function () {
 
             $gutenberg = new NextGutenberg();
             $acf = new NextAcf();
-
             return [
                 'id' => $post->ID,
                 'slug' => $slug,
                 'type' => $type,
-                'post_status'    => $is_preview ? ['publish', 'draft', 'private', 'future'] : 'publish',
+                'post_status' => $is_preview ? ['publish', 'draft', 'private', 'future'] : 'publish',
                 'title' => get_the_title($post),
                 'blocks' => $gutenberg->getBlocks($post->post_content),
                 'acf' => $acf->getAcfPageFields($post->ID),
@@ -69,7 +72,6 @@ add_action('rest_api_init', function () {
                 'post_status' => 'publish',
                 'numberposts' => -1,
             ];
-
             $posts = get_posts($args);
             $archive = new NextArchive();
             return $archive->format($posts);
@@ -77,28 +79,22 @@ add_action('rest_api_init', function () {
         'permission_callback' => '__return_true',
     ]);
 
-
     register_rest_route('blockbite/v1/next', '/search(?:/(?P<type>[a-zA-Z0-9-_]+))?', [
         'methods' => 'GET',
-        'callback' => function () 
-        {
-
-
+        'callback' => function () {
             $limit = isset($_GET['limit']) ? intval($_GET['limit']) : -1;
-           
+
             $args = [
-                
                 'post_type' => ['post', 'page'],
                 'post_status' => 'publish',
                 'numberposts' => $limit,
             ];
 
-            // optional type parameter
+            // Optional type parameter
             $query = sanitize_text_field($_GET['query'] ?? '');
             if (!empty($query)) {
-                $args['s'] = $query; 
+                $args['s'] = $query;
             }
-
 
             $posts = get_posts($args);
             $search = new NextSearch();
@@ -107,22 +103,18 @@ add_action('rest_api_init', function () {
         'permission_callback' => '__return_true',
     ]);
 
-
     register_rest_route('blockbite/v1/next', '/config', [
         'methods' => 'GET',
         'permission_callback' => '__return_true',
         'callback' => function () {
-            // check if the BlockbiteFrontend class exists
+            // Check if the BlockbiteFrontend class exists
             if (!class_exists('Blockbite\Blockbite\Frontend')) {
                 return new \WP_Error('class_not_found', 'BlockbiteFrontend class not found', ['status' => 500]);
             }
-
             $css = BlockbiteFrontend::getFrontendCss();
-
             return [
                 'css' => $css,
             ];
         },
     ]);
 });
-

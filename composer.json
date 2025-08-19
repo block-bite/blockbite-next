@@ -1,5 +1,5 @@
 {
-  "name": "blockbite/next",
+  "name": "block-bite/blockbite-next",
   "description": "A custom WordPress plugin.",
   "type": "wordpress-plugin",
   "autoload": {
